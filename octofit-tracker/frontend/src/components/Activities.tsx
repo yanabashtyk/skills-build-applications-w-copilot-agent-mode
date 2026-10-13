@@ -1,14 +1,17 @@
 import { CapabilityCard } from './CapabilityCard.js';
+import { getJson } from '../api/client.js';
 
 type Activity = { _id?: string; type: string; minutes: number; points: number };
+
+const loadActivities = async () =>
+  (await getJson<{ activities: Activity[] }>('/api/activities')).activities;
 
 export default function Activities() {
   return (
     <CapabilityCard<Activity>
       title="Activities"
       description="Track student activity minutes and points."
-      endpoint="/api/activities"
-      collection="activities"
+      loadItems={loadActivities}
       emptyMessage="No activities yet."
       renderItems={(activities) => (
           <ul className="list-group list-group-flush">

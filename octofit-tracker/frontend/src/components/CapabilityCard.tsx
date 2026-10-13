@@ -1,24 +1,21 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { getJson } from '../api/client.js';
 
 type Props<T> = {
   title: string;
   description: string;
-  endpoint: string;
-  collection: string;
+  loadItems: () => Promise<T[]>;
   emptyMessage: string;
   renderItems: (items: T[]) => ReactNode;
 };
 
-export function CapabilityCard<T>({ title, description, endpoint, collection, emptyMessage, renderItems }: Props<T>) {
+export function CapabilityCard<T>({ title, description, loadItems, emptyMessage, renderItems }: Props<T>) {
   const [items, setItems] = useState<T[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    getJson<Record<string, T[]>>(endpoint)
-      .then((payload) => {
-        const result = payload[collection];
+    loadItems()
+      .then((result) => {
         if (!Array.isArray(result)) throw new Error('Unexpected API response');
         if (active) setItems(result);
       })
@@ -26,7 +23,7 @@ export function CapabilityCard<T>({ title, description, endpoint, collection, em
         if (active) setError(requestError instanceof Error ? requestError.message : 'Unknown error');
       });
     return () => { active = false; };
-  }, [collection, endpoint]);
+  }, [loadItems]);
 
   return (
     <section className="card h-100">
